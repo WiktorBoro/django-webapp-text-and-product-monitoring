@@ -108,7 +108,7 @@ class SaaS:
     def __init__(self,
                  domain: str,
                  token: str,
-                 update_status: object):
+                 update_status):
         self.domain = domain
         self.token = token
         self.update_status = update_status
