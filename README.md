@@ -26,4 +26,4 @@ Main app file, tasks:
 3. Return Google Sheets URL
 
 ## Sample results sheet
-https://docs.google.com/spreadsheets/d/1d6C7zEypAnRi5etQNjj0crirVDOSJVaXgJL7EXErjNM/
+https://docs.google.com/spreadsheets/d/1xj9sel6HNAgaWrQNQLODKNg05vRKv4c05NzMQ1ofwTc/
