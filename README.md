@@ -24,3 +24,6 @@ Main app file, tasks:
 1. Extracts data placed during crawl and kwt api from the database
 2. Save all data to Google Sheets
 3. Return Google Sheets URL
+
+## Sample results sheet
+https://docs.google.com/spreadsheets/d/1d6C7zEypAnRi5etQNjj0crirVDOSJVaXgJL7EXErjNM/
