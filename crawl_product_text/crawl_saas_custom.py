@@ -316,7 +316,7 @@ class Crawl:
             self.soup = BeautifulSoup(html_text, features="lxml")
             
         except TimeoutError:
-            self.error_message = "Soup error"
+            self.error_message = "Timeout error"
             self.error()
             
         except Exception as e:
