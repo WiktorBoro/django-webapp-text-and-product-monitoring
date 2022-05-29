@@ -351,12 +351,9 @@ class Crawl:
 
             # sometime if we enter id/class in custom option there are several area of the same id/class on page
             # so we need to find only this area where we get products
-            product_name_list = list()
-            for product_area in product_area_all:
-                product_name_list = product_area.find_all(html_code_symbol,
-                                                          attrs=arrt_regex_product_name)
-                if product_name_list:
-                    break
+            product_name_list = list(filter(lambda product_area: 
+                                            product_area.find_all(html_code_symbol, 
+                                                                  attrs=arrt_regex_product_name), product_area_all))
 
             self.product_name = ""
             self.amount_of_products = 0
