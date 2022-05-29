@@ -101,7 +101,7 @@ def choice_cms(self,
         update_status.set_update_progress(current_job=2, total_work_to_do=2, desc="Done!!")
         return "Done!!"
     else:
-        raise update_status.error_revoke("Crawla error")
+        raise update_status.error_revoke("Crawla dead")
 
 
 class SaaS:
@@ -179,12 +179,15 @@ class SaaS:
         self.start_crawl(regex_conteiner)
 
     def start_crawl(self, regex_conteiner: dict) -> None:
-        Crawl(self.token, self.update_status).crawl(
-                      arrt_regex_text=regex_conteiner['arrt_regex_text'],
-                      arrt_regex_product_area=regex_conteiner['arrt_regex_product_area'],
-                      arrt_regex_product_name=regex_conteiner['arrt_regex_product_name'],
-                      html_code_symbol=regex_conteiner['html_code_symbol'],
-                      sleep_time=regex_conteiner['sleep_time'])
+        if len(URL.objects.filter(token=self.token)) != 0:
+            Crawl(self.token, self.update_status).crawl(
+                          arrt_regex_text=regex_conteiner['arrt_regex_text'],
+                          arrt_regex_product_area=regex_conteiner['arrt_regex_product_area'],
+                          arrt_regex_product_name=regex_conteiner['arrt_regex_product_name'],
+                          html_code_symbol=regex_conteiner['html_code_symbol'],
+                          sleep_time=regex_conteiner['sleep_time'])
+        else:
+            raise self.update_status.error_revoke("Sitemap error") 
 
 
 class GetUrlFromSitemap:
@@ -265,7 +268,9 @@ class GetUrlFromSitemap:
                     token=self.token).save()
                 self.current_job += 1
         else:
-            raise ValueError
+            error_message = f"Sitemaps error"
+            Domain.objects.filter(token=self.token).update(error_message=error_message)
+            self.update_status.error_revoke("Sitemaps error")
 
     # main function in this class
     def get_url_from_sitemaps_to_db(self,
@@ -280,10 +285,6 @@ class GetUrlFromSitemap:
                                           condition_allow=condition_allow,
                                           condition_disallow=condition_disallow)
             self.save_to_db()
-        except ValueError:
-            error_message = f"Sitemaps error"
-            Domain.objects.filter(token=self.token).update(error_message=error_message)
-            self.update_status.error_revoke("Sitemaps error")
 
         except TimeoutError:
             error_message = f"Cancele task"
@@ -300,6 +301,7 @@ class Crawl:
         self.current_job = 0
         self.total_work_to_do = 0
         self.text = ""
+        self.error_message = ''
         self.length = 0
         self.h1 = ""
         self.product_name = ""
@@ -312,9 +314,14 @@ class Crawl:
             self.html = get(url, timeout=10, headers=self.headers)
             html_text = self.html.text
             self.soup = BeautifulSoup(html_text, features="lxml")
-        except:
-            self.error_message = "ERROR - soup"
-            raise ValueError
+            
+        except TimeoutError:
+            self.error_message = "Soup error"
+            self.error()
+            
+        except Exception as e:
+            self.error_message = f"Error {e}"
+            self.error()
 
     def get_text_from_resposne_url(self,
                                    arrt_regex_text: dict,
@@ -351,10 +358,9 @@ class Crawl:
 
             # sometime if we enter id/class in custom option there are several area of the same id/class on page
             # so we need to find only this area where we get products
-            product_name_list = list(filter(lambda product_area: 
-                                            product_area.find_all(html_code_symbol, 
+            product_name_list = list(filter(lambda product_area:
+                                            product_area.find_all(html_code_symbol,
                                                                   attrs=arrt_regex_product_name), product_area_all))
-
             self.product_name = ""
             self.amount_of_products = 0
             for product in product_name_list:
@@ -410,12 +416,13 @@ class Crawl:
                                                     html_code_symbol=html_code_symbol)
                     self.get_h1_from_response_url()
                 else:
-                    self.error_message = f"ERROR - page error"
-                    raise ValueError
-            except ValueError:
-                self.error()
+                    self.error_message = f"Page error - status code {self.html.status_code}"
+                    self.error()
             except TimeoutError:
                 break
+            except Exception as e:
+                self.error_message += f" - {e}"
+                
 
             # save all data from single url
             self.save_in_db(url)
