@@ -57,6 +57,12 @@ def choice_cms(self,
         else:
             # if custom_domain.text_one_class wasn't entered this custom_class_text = ""
             custom_class_text = str(custom_domain.text_one_class)
+            
+        # if product field is empty and we are not looking for the product
+        if custom_domain.product_area:
+            product_area = custom_domain.product_area
+        else:
+            product_area = "DO NOT LOOK FOR THE PRODUCT"
 
         # in custom option we can chose sitemap option or import url list,
         # if we import urls list we don't need to crawl sitemap
@@ -84,7 +90,7 @@ def choice_cms(self,
         regex_conteiner = {'arrt_regex_text':
                                {str(custom_domain.class_id_text): compile(custom_class_text)},
                            'arrt_regex_product_area':
-                               {str(custom_domain.class_id_product): compile(custom_domain.product_area)},
+                               {str(custom_domain.class_id_product): compile(product_area)},
                            'arrt_regex_product_name':
                                {str(custom_domain.class_id_product): compile(custom_domain.product_id)},
                            'html_code_symbol':
